@@ -106,3 +106,9 @@ class AuthenticationTests(APITestCase):
     def test_invalid_refresh_token(self):
         response = self.client.post(self.refresh_url, {"refresh": "invalid_token_string"}, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_health_check_endpoint(self):
+        response = self.client.get(reverse('health-check'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('status'), 'healthy')
+        self.assertIn('api_endpoints', response.data)
