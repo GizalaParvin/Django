@@ -157,10 +157,13 @@ python manage.py makemigrations
 # 5. Apply migrations to PostgreSQL
 python manage.py migrate
 
-# 6. Create a superuser for Django Admin
+# 6. (Optional) Seed demo data for testing
+python manage.py seed_data
+
+# 7. Create a superuser for Django Admin
 python manage.py createsuperuser
 
-# 7. Start the local development server
+# 8. Start the local development server
 python manage.py runserver
 ```
 
@@ -169,6 +172,13 @@ The API will now be live at: `http://127.0.0.1:8000/`
 ---
 
 ## 7. API Endpoints Specification
+
+### System & Health APIs
+
+| Method | Endpoint | Description | Requires Auth |
+|---|---|---|---|
+| `GET` | `/` | API Root Overview | No |
+| `GET` | `/api/health/` | Service health & database connectivity check | No |
 
 ### Authentication APIs (`/api/auth/`)
 
