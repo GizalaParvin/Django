@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -24,7 +25,23 @@ class DoctorViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update', 'destroy']:
             return Doctor.objects.filter(created_by=self.request.user)
 
-        return Doctor.objects.all().order_by('-created_at')
+        queryset = Doctor.objects.all().order_by('-created_at')
+
+        # Query parameter filtering
+        specialization = self.request.query_params.get('specialization')
+        if specialization:
+            queryset = queryset.filter(specialization__icontains=specialization.strip())
+
+        search = self.request.query_params.get('search')
+        if search:
+            query = search.strip()
+            queryset = queryset.filter(
+                models.Q(name__icontains=query) |
+                models.Q(specialization__icontains=query) |
+                models.Q(qualification__icontains=query)
+            )
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

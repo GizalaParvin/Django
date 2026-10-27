@@ -109,3 +109,15 @@ class DoctorAPITests(APITestCase):
         # Confirm doctor remains unchanged
         self.doctor_a.refresh_from_db()
         self.assertEqual(self.doctor_a.name, "Gregory House")
+
+    def test_filter_and_search_doctors(self):
+        self.client.force_authenticate(user=self.user_b)
+        response = self.client.get(f"{self.list_url}?specialization=Diagnostic")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data['results'] if isinstance(response.data, dict) and 'results' in response.data else response.data
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['name'], "Gregory House")
+
+        response_empty = self.client.get(f"{self.list_url}?search=NonExistent")
+        results_empty = response_empty.data['results'] if isinstance(response_empty.data, dict) and 'results' in response_empty.data else response_empty.data
+        self.assertEqual(len(results_empty), 0)

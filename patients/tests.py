@@ -140,3 +140,14 @@ class PatientAPITests(APITestCase):
 
         # Verify patient record was not altered or deleted
         self.assertTrue(Patient.objects.filter(pk=self.patient_a.pk).exists())
+
+    def test_filter_and_search_patients(self):
+        self.client.force_authenticate(user=self.user_a)
+        response = self.client.get(f"{self.list_url}?search=Alice")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data['results'] if isinstance(response.data, dict) and 'results' in response.data else response.data
+        self.assertEqual(len(results), 1)
+
+        response_male = self.client.get(f"{self.list_url}?gender=male")
+        results_male = response_male.data['results'] if isinstance(response_male.data, dict) and 'results' in response_male.data else response_male.data
+        self.assertEqual(len(results_male), 0)

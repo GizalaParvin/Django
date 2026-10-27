@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,7 +18,24 @@ class PatientViewSet(viewsets.ModelViewSet):
         # Strictly scope records to the authenticated requesting user
         if not self.request.user.is_authenticated:
             return Patient.objects.none()
-        return Patient.objects.filter(user=self.request.user).order_by('-created_at')
+
+        queryset = Patient.objects.filter(user=self.request.user).order_by('-created_at')
+
+        # Filter by gender
+        gender = self.request.query_params.get('gender')
+        if gender:
+            queryset = queryset.filter(gender=gender.strip().lower())
+
+        # Search by name or phone
+        search = self.request.query_params.get('search')
+        if search:
+            query = search.strip()
+            queryset = queryset.filter(
+                models.Q(name__icontains=query) |
+                models.Q(phone__icontains=query)
+            )
+
+        return queryset
 
     def perform_create(self, serializer):
         # Automatically assign ownership to the authenticated user
